@@ -94,7 +94,7 @@ class Intern extends Model
      */
     public function scopeActive($query)
     {
-        return $query->where('Status', 'Active');
+        return $query->where('status', 'Active');
     }
 
     /**
@@ -102,7 +102,7 @@ class Intern extends Model
      */
     public function scopePending($query)
     {
-        return $query->where('Status', 'Pending');
+        return $query->where('status', 'Pending');
     }
 
     /**
@@ -110,6 +110,6 @@ class Intern extends Model
      */
     public function scopeInactive($query)
     {
-        return $query->where('Status', 'Inactive');
+        return $query->where('status', 'Inactive');
     }
 }
