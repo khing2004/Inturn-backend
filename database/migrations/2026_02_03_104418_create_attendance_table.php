@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('attendance', function (Blueprint $table) {
             $table->id('attendance_id');
-            $table->unsignedBigInteger('intern_id');
+            $table->foreignId('intern_id')->constrained('interns', 'intern_id')->onDelete('cascade');
             $table->date('work_date');
             $table->time('time_in');
             $table->time('time_out');
@@ -21,8 +21,6 @@ return new class extends Migration
             $table->decimal('total_hours', 4, 2);
             $table->timestamps();
 
-            // Foreign key
-            $table->foreign('intern_id')->references('intern_id')->on('interns')->onDelete('cascade');
         });
     }
 

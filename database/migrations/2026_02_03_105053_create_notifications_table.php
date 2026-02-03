@@ -13,16 +13,19 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id('notification_id');
-            $table->unsignedBigInteger('user_id');
-            $table->enum('reference_type', ['Submission', 'Attendance', 'Evaluation']);
-            $table->unsignedBigInteger('reference_id');
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
+            
+            // Polymorphic columns
+            $table->unsignedBigInteger('reference_id'); // This stores the actual ID (1, 2, 3...)
+            $table->string('reference_type'); // This stores the model name (App\Models\Submission, etc.)
+
+            $table->string('message', 500);
             $table->boolean('is_read')->default(false);
             $table->enum('type', ['Urgent', 'Warning', 'Success', 'Info']);
-            $table->timestamp('created_at');
             $table->timestamps();
 
-            // Foreign key
-            $table->foreign('user_id')->references('user_id')->on('users')->onDelete('cascade');
+            $table->index(['reference_id', 'reference_type']);
+
         });
     }
 

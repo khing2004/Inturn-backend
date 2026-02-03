@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('evaluations', function (Blueprint $table) {
             $table->id('evaluation_id');
-            $table->unsignedBigInteger('intern_id');
-            $table->unsignedBigInteger('admin_id');
+            $table->foreignId('intern_id')->constrained('interns', 'intern_id')->onDelete('cascade');
+            $table->foreignId('admin_id')->constrained('admins', 'admin_id')->onDelete('cascade');
             $table->integer('technical_skills_rating');
             $table->integer('communication_rating');
             $table->text('admin_comments');
@@ -22,9 +22,6 @@ return new class extends Migration
             $table->enum('period', ['Weekly', 'Monthly']);
             $table->timestamps();
 
-            // Foreign keys
-            $table->foreign('intern_id')->references('intern_id')->on('interns')->onDelete('cascade');
-            $table->foreign('admin_id')->references('admin_id')->on('admins')->onDelete('cascade');
         });
     }
 

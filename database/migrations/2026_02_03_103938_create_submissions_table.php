@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('submissions', function (Blueprint $table) {
             $table->id('document_id');
-            $table->unsignedBigInteger('intern_id');
+            $table->foreignId('intern_id')->constrained('interns', 'intern_id')->onDelete('cascade');
             $table->enum('type', ['Daily Report', 'Document', 'Other']);
             $table->string('file_name', 255);
             $table->string('file_path', 500);
@@ -22,8 +22,6 @@ return new class extends Migration
             $table->enum('status', ['Pending', 'Verified', 'Rejected'])->default('Pending');
             $table->text('admin_remarks')->nullable();
             $table->timestamps();
-
-            $table->foreign('intern_id')->references('intern_id')->on('interns')->onDelete('cascade');
         });
     }
 

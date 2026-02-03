@@ -13,15 +13,13 @@ return new class extends Migration
     {
         Schema::create('daily_reports', function (Blueprint $table) {
             $table->id('report_id');
-            $table->unsignedBigInteger('document_id');
+            $table->foreignId('document_id')->constrained('submissions', 'document_id')->onDelete('cascade');
             $table->string('report_title', 255);
             $table->text('accomplishments');
             $table->text('tasks_completed');
             $table->text('challenges');
             $table->timestamps();
 
-            // Foreign key
-            $table->foreign('document_id')->references('document_id')->on('submissions')->onDelete('cascade');
         });
     }
 
