@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('file_name', 255);
             $table->string('file_path', 500);
             $table->timestamp('date_submitted');
-            $table->string('description', 500);
+            $table->string('description', 500)->nullable();
             $table->enum('status', ['Pending', 'Verified', 'Rejected'])->default('Pending');
             $table->text('admin_remarks')->nullable();
             $table->timestamps();

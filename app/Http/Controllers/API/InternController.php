@@ -16,7 +16,7 @@ class InternController extends Controller
      * get intern's tasks/submissions
      * GET /api/intern/tasks
      */
-    public function getMyTasks(Request $request)
+    public function getMyDocuments(Request $request)
     {
         if (!$request->user()->isIntern()) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -52,25 +52,25 @@ class InternController extends Controller
     }
 
     /**
-     * submit a task/daily report
+     * submit a document/daily report
      * POST /api/intern/tasks/{taskId}/submit
      * POST /api/intern/tasks/submit
      */
-    public function submitTask(Request $request, $taskId = null)
+    public function submitDocument(Request $request, $taskId = null)
     {
         if (!$request->user()->isIntern()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $validated = $request->validate([
-            'type' => 'required|in:daily_report,document',
+            'type' => 'required|in:Daily Report,Document, Other', # Has to match with migrations table enum values
             'file' => 'required|file|max:10240', // 10MB max
             
-            // Daily report fields (required if type is daily_report)
-            'report_title' => 'required_if:type,daily_report|string|max:255',
-            'accomplishments' => 'required_if:type,daily_report|string',
-            'tasks_completed' => 'required_if:type,daily_report|string',
-            'challenges' => 'required_if:type,daily_report|string',
+            // Daily report fields (required if type is Daily Report)
+            'report_title' => 'required_if:type,Daily Report|string|max:255',
+            'accomplishments' => 'required_if:type,Daily Report|string',
+            'tasks_completed' => 'required_if:type,Daily Report|string',
+            'challenges' => 'required_if:type,Daily Report|string',
         ]);
 
         $intern = $request->user()->intern;
@@ -88,10 +88,11 @@ class InternController extends Controller
             'file_path' => $filePath,
             'date_submitted' => now(),
             'status' => 'pending',
+            'description' => $validated['report_title'] ?? 'Task submission' //default description 
         ]);
 
-        // create daily report if type is daily_report
-        if ($validated['type'] === 'daily_report') {
+        // create daily report if type is Daily Report
+        if ($validated['type'] === 'Daily Report') {
             $submission->dailyReport()->create([
                 'report_title' => $validated['report_title'],
                 'accomplishments' => $validated['accomplishments'],
@@ -103,7 +104,7 @@ class InternController extends Controller
         $submission->load('dailyReport');
 
         return response()->json([
-            'message' => 'Task submitted successfully',
+            'message' => 'Submission submitted successfully',
             'submission' => [
                 'id' => $submission->document_id,
                 'type' => $submission->type,

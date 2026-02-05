@@ -36,6 +36,7 @@ class Submission extends Model
         'date_submitted',
         'status',
         'admin_remarks',
+        'description',
     ];
 
     /**

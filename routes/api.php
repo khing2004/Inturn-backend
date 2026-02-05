@@ -10,29 +10,29 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// Public Routes (No token needed)
-Route::post('/login', [AuthController::class, 'login']);
+// public routes (no token needed)
+Route::post('/login', [AuthController::class, 'login']); # checked thru postman returned status code 200
 Route::post('/register', [AuthController::class, 'register']);
 
-// Protected Routes (Token required via Sanctum)
+// protected routes (token required via Sanctum)
 Route::middleware('auth:sanctum')->group(function () {
     
-    // Auth Actions
-    Route::get('/user', [AuthController::class, 'user']); # Checked thru postman
-    Route::post('/logout', [AuthController::class, 'logout']); # Checked thru postman
+    // auth actions
+    Route::get('/user', [AuthController::class, 'user']); # checked thru postman returned status code 200
+    Route::post('/logout', [AuthController::class, 'logout']); # checked thru postman
 
-    // Admin Specific Routes
+    // admin specific routes
     Route::prefix('admin')->group(function () {
-        Route::get('/interns', [AdminController::class, 'getInterns']); # Checked thru postman
-        Route::post('/interns', [AdminController::class, 'createIntern']); # Checked thru postman
-        Route::put('/interns/{id}', [AdminController::class, 'updateIntern']); #
-        Route::delete('/interns/{id}', [AdminController::class, 'deleteIntern']); #
+        Route::get('/interns', [AdminController::class, 'getInterns']); # checked thru postman returned status code 200
+        Route::post('/interns', [AdminController::class, 'createIntern']); # checked thru postman returned status code 201
+        Route::put('/interns/{id}', [AdminController::class, 'updateIntern']); # checked thru postman returned status code 200
+        Route::delete('/interns/{id}', [AdminController::class, 'deleteIntern']); # #checked thru postman returned status code 200
     });
 
-    // Intern Specific Routes
+    // intern specific routes
     Route::prefix('intern')->group(function () {
-        Route::get('/tasks', [InternController::class, 'getMyTasks']);
-        Route::post('/tasks/submit', [InternController::class, 'submitTask']);
-        Route::get('/profile', [InternController::class, 'getMyProfile']);
+        Route::get('/documents', [InternController::class, 'getMyDocuments']); # checked status 200
+        Route::post('/documents/submit', [InternController::class, 'submitDocument']); #checked status 201
+        Route::get('/profile', [InternController::class, 'getMyProfile']); # checked status 200
     });
 });
