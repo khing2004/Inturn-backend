@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\Controller;
 use App\Models\Admin;
 use App\Models\Intern;
 use App\Models\User;
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
 class AdminController extends Controller
 {
     /**
-     * Get all interns
+     * get all interns
      * GET /api/admin/interns
      */
     public function getInterns(Request $request)
@@ -32,7 +32,7 @@ class AdminController extends Controller
                     'department' => $intern->department,
                     'supervisor' => $intern->supervisor,
                     'start_date' => $intern->start_date->format('Y-m-d'),
-                    'phone_num' => $intern->phone_num,
+                    'phone_number' => $intern->phone_number,
                     'emergency_contact' => $intern->emergency_contact,
                     'emergency_contact_name' => $intern->emergency_contact_name,
                     'address' => $intern->address,
@@ -47,7 +47,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Create new intern
+     * create new intern
      * POST /api/admin/interns
      */
     public function createIntern(Request $request)
@@ -65,14 +65,14 @@ class AdminController extends Controller
             'department' => 'required|string|max:50',
             'supervisor' => 'required|string|max:50',
             'start_date' => 'required|date',
-            'phone_num' => 'required|string|max:20',
+            'phone_number' => 'required|string|max:20',
             'emergency_contact' => 'required|string|max:20',
             'emergency_contact_name' => 'required|string|max:50',
             'address' => 'required|string|max:50',
             'status' => 'nullable|in:active,inactive,pending',
         ]);
 
-        // Create user
+        // create user
         $user = User::create([
             'email' => $validated['email'],
             'name' => $validated['name'],
@@ -80,14 +80,14 @@ class AdminController extends Controller
             'gender' => $validated['gender'],
         ]);
 
-        // Create intern
+        // create intern
         $intern = $user->intern()->create([
             'admin_id' => $request->user()->admin->admin_id,
             'university' => $validated['university'],
             'department' => $validated['department'],
             'supervisor' => $validated['supervisor'],
             'start_date' => $validated['start_date'],
-            'phone_num' => $validated['phone_num'],
+            'phone_number' => $validated['phone_number'],
             'emergency_contact' => $validated['emergency_contact'],
             'emergency_contact_name' => $validated['emergency_contact_name'],
             'address' => $validated['address'],
@@ -106,7 +106,7 @@ class AdminController extends Controller
                 'department' => $intern->department,
                 'supervisor' => $intern->supervisor,
                 'start_date' => $intern->start_date?->format('Y-m-d'),
-                'phone_num' => $intern->phone_number,
+                'phone_number' => $intern->phone_number,
                 'emergency_contact' => $intern->emergency_contact,
                 'emergency_contact_name' => $intern->emergency_contact_name,
                 'address' => $intern->address,
@@ -117,7 +117,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Update intern
+     * update intern
      * PUT /api/admin/interns/{id}
      */
     public function updateIntern(Request $request, $id)
@@ -134,25 +134,25 @@ class AdminController extends Controller
             'department' => 'nullable|string|max:50',
             'supervisor' => 'nullable|string|max:50',
             'start_date' => 'nullable|date',
-            'phone_num' => 'nullable|string|max:20',
+            'phone_number' => 'nullable|string|max:20',
             'emergency_contact' => 'nullable|string|max:20',
             'emergency_contact_name' => 'nullable|string|max:50',
             'address' => 'nullable|string|max:50',
             'status' => 'nullable|in:active,inactive,pending',
         ]);
 
-        // Update user info if provided
+        // pdate user info if provided
         if (isset($validated['name'])) {
             $intern->user->update(['name' => $validated['name']]);
         }
 
-        // Update intern info
+        // update intern info
         $intern->update(array_filter([
             'university' => $validated['university'] ?? null,
             'department' => $validated['department'] ?? null,
             'supervisor' => $validated['supervisor'] ?? null,
             'start_date' => $validated['start_date'] ?? null,
-            'phone_num' => $validated['phone_num'] ?? null,
+            'phone_number' => $validated['phone_number'] ?? null,
             'emergency_contact' => $validated['emergency_contact'] ?? null,
             'emergency_contact_name' => $validated['emergency_contact_name'] ?? null,
             'address' => $validated['address'] ?? null,
@@ -171,7 +171,7 @@ class AdminController extends Controller
                 'department' => $intern->department,
                 'supervisor' => $intern->supervisor,
                 'start_date' => $intern->start_date?->format('Y-m-d'),
-                'phone_num' => $intern->phone_number,
+                'phone_number' => $intern->phone_number,
                 'emergency_contact' => $intern->emergency_contact,
                 'emergency_contact_name' => $intern->emergency_contact_name,
                 'address' => $intern->address,
@@ -182,7 +182,7 @@ class AdminController extends Controller
     }
 
     /**
-     * Delete intern
+     * delete intern
      * DELETE /api/admin/interns/{id}
      */
     public function deleteIntern(Request $request, $id)
@@ -194,10 +194,10 @@ class AdminController extends Controller
         $intern = Intern::findOrFail($id);
         $user = $intern->user;
 
-        // Delete intern (cascade will handle related records)
+        // delete intern (cascade will handle related records)
         $intern->delete();
         
-        // Delete user
+        // delete user
         $user->delete();
 
         return response()->json([

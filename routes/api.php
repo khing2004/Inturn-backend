@@ -18,15 +18,15 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::middleware('auth:sanctum')->group(function () {
     
     // Auth Actions
-    Route::get('/user', [AuthController::class, 'user']);
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']); # Checked thru postman
+    Route::post('/logout', [AuthController::class, 'logout']); # Checked thru postman
 
     // Admin Specific Routes
     Route::prefix('admin')->group(function () {
-        Route::get('/interns', [AdminController::class, 'getInterns']);
-        Route::post('/interns', [AdminController::class, 'createIntern']);
-        Route::put('/interns/{id}', [AdminController::class, 'updateIntern']);
-        Route::delete('/interns/{id}', [AdminController::class, 'deleteIntern']);
+        Route::get('/interns', [AdminController::class, 'getInterns']); # Checked thru postman
+        Route::post('/interns', [AdminController::class, 'createIntern']); # Checked thru postman
+        Route::put('/interns/{id}', [AdminController::class, 'updateIntern']); #
+        Route::delete('/interns/{id}', [AdminController::class, 'deleteIntern']); #
     });
 
     // Intern Specific Routes

@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\Controller;
 use App\Models\User;
 use App\Models\Admin;
+use App\Models\Intern;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -12,7 +13,7 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     /**
-     * Login user and create token
+     * login user and create token
      * POST /api/auth/login
      */
     public function login(Request $request)
@@ -30,10 +31,10 @@ class AuthController extends Controller
             ]);
         }
 
-        // Create token
+        // create token
         $token = $user->createToken('auth-token')->plainTextToken;
 
-        // Load user role (admin or intern)
+        // load user role (admin or intern)
         $user->load(['admin', 'intern']);
 
         return response()->json([
@@ -53,7 +54,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Register new user
+     * register new user
      * POST /api/auth/register
      */
     public function register(Request $request)
@@ -65,18 +66,18 @@ class AuthController extends Controller
             'gender' => 'required|in:male,female,other',
             'role' => 'required|in:admin,intern',
             
-            // Intern-specific fields (required if role is intern)
+            // intern-specific fields (required if role is intern)
             'university' => 'required_if:role,intern|string|max:50',
             'department' => 'required_if:role,intern|string|max:50',
             'supervisor' => 'required_if:role,intern|string|max:50',
             'start_date' => 'required_if:role,intern|date',
-            'phone_num' => 'required_if:role,intern|string|max:20',
+            'phone_number' => 'required_if:role,intern|string|max:20',
             'emergency_contact' => 'required_if:role,intern|string|max:20',
             'emergency_contact_name' => 'required_if:role,intern|string|max:50',
             'address' => 'required_if:role,intern|string|max:50',
         ]);
 
-        // Create user
+        // create user
         $user = User::create([
             'email' => $validated['email'],
             'name' => $validated['name'],
@@ -84,16 +85,16 @@ class AuthController extends Controller
             'gender' => $validated['gender'],
         ]);
 
-        // Create role-specific record
+        // create role-specific record
         if ($validated['role'] === 'admin') {
             $user->admin()->create([]);
         } else {
-            // For intern, we need an admin to assign them to
-            // Get first admin or create a default admin
+            // for intern, we need an admin to assign them to
+            // get first admin or create a default admin
             $defaultAdmin = Admin::first();
             
             if (!$defaultAdmin) {
-                // Create a default admin if none exists
+                // create a default admin if none exists
                 $adminUser = User::create([
                     'email' => 'admin@inturn.com',
                     'name' => 'Default Admin',
@@ -109,7 +110,7 @@ class AuthController extends Controller
                 'department' => $validated['department'],
                 'supervisor' => $validated['supervisor'],
                 'start_date' => $validated['start_date'],
-                'phone_num' => $validated['phone_num'],
+                'phone_number' => $validated['phone_number'],
                 'emergency_contact' => $validated['emergency_contact'],
                 'emergency_contact_name' => $validated['emergency_contact_name'],
                 'address' => $validated['address'],
@@ -117,7 +118,7 @@ class AuthController extends Controller
             ]);
         }
 
-        // Create token
+        // create token
         $token = $user->createToken('auth-token')->plainTextToken;
 
         $user->load(['admin', 'intern']);
@@ -139,7 +140,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Logout user (revoke token)
+     * logout user (revoke token)
      * POST /api/auth/logout
      */
     public function logout(Request $request)
@@ -152,7 +153,7 @@ class AuthController extends Controller
     }
 
     /**
-     * Get authenticated user
+     * get authenticated user
      * GET /api/auth/user
      */
     public function user(Request $request)

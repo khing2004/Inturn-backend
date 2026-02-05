@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers\API;
 
-use App\Http\Controllers\Controller;
+use App\Http\Controllers\API\Controller;
 use App\Models\Intern;
 use App\Models\Submission;
 use App\Models\DailyReport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class InternController extends Controller
 {
     /**
-     * Get intern's tasks/submissions
+     * get intern's tasks/submissions
      * GET /api/intern/tasks
      */
     public function getMyTasks(Request $request)
@@ -51,7 +52,7 @@ class InternController extends Controller
     }
 
     /**
-     * Submit a task/daily report
+     * submit a task/daily report
      * POST /api/intern/tasks/{taskId}/submit
      * POST /api/intern/tasks/submit
      */
@@ -74,12 +75,12 @@ class InternController extends Controller
 
         $intern = $request->user()->intern;
 
-        // Store file
+        // store file
         $file = $request->file('file');
         $fileName = time() . '_' . $file->getClientOriginalName();
         $filePath = $file->storeAs('submissions', $fileName, 'public');
 
-        // Create submission
+        // sreate submission
         $submission = Submission::create([
             'intern_id' => $intern->intern_id,
             'type' => $validated['type'],
@@ -89,7 +90,7 @@ class InternController extends Controller
             'status' => 'pending',
         ]);
 
-        // Create daily report if type is daily_report
+        // create daily report if type is daily_report
         if ($validated['type'] === 'daily_report') {
             $submission->dailyReport()->create([
                 'report_title' => $validated['report_title'],
@@ -122,7 +123,7 @@ class InternController extends Controller
     }
 
     /**
-     * Get intern's profile
+     * get intern's profile
      * GET /api/intern/profile
      */
     public function getMyProfile(Request $request)
@@ -134,7 +135,7 @@ class InternController extends Controller
         $intern = $request->user()->intern;
         $intern->load(['user', 'admin.user']);
 
-        // Get statistics
+        // get statistics
         $totalSubmissions = $intern->submissions()->count();
         $pendingSubmissions = $intern->submissions()->pending()->count();
         $verifiedSubmissions = $intern->submissions()->verified()->count();
@@ -158,7 +159,7 @@ class InternController extends Controller
                 'department' => $intern->department,
                 'supervisor' => $intern->supervisor,
                 'start_date' => $intern->start_date->format('Y-m-d'),
-                'phone_num' => $intern->phone_number,
+                'phone_number' => $intern->phone_number,
                 'emergency_contact' => $intern->emergency_contact,
                 'emergency_contact_name' => $intern->emergency_contact_name,
                 'address' => $intern->address,
