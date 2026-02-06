@@ -204,4 +204,106 @@ class AdminController extends Controller
             'message' => 'Intern deleted successfully',
         ], 200);
     }
+
+    /**
+     * get intern details (for admin view)
+     * GET /api/admin/interns/{id}
+     */
+    public function getInternDetails(Request $request, $id)
+    {
+        $intern = Intern::with(['user', 'admin.user', 
+        'submissions' => function($query) {
+            $query->latest()->take(5);
+        }, 'attendance' => function($query) {
+            $query->latest('work_date')->take(5);
+        }
+        ])->findOrFail($id);
+
+        $totalSubmissions = $intern->submissions()->count();
+        $approvedSubmissions = $intern->submissions()->where('status', 'Verified')->count();
+        
+        return response()->json([
+            'intern' => [
+                'id' => $intern->intern_id,
+                'name' => $intern->user->name,
+                'email' => $intern->user->email,
+                'university' => $intern->university,
+                'department' => $intern->department,
+                'supervisor' => $intern->supervisor,
+                'start_date' => $intern->start_date?->format('Y-m-d'),
+                'phone_number' => $intern->phone_number,
+                'emergency_contact' => $intern->emergency_contact,
+                'emergency_contact_name' => $intern->emergency_contact_name,
+                'address' => $intern->address,
+                'status' => $intern->status,
+                'admin_name' => $intern->admin->user->name,
+            ],
+            'statistics' => [
+                'total_submissions' => $totalSubmissions,
+                'approved_submissions' => $approvedSubmissions,
+            ],
+            'recent_attendance' => $intern->attendance,
+            'recent_submissions' => $intern->submissions,
+        ], 200);
+    }
+
+    public function getAttendanceRecords(Request $request)
+    {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        $attendanceRecords = $request->user()->admin->attendanceRecords()
+            ->with('attendance, interns, user')
+            ->latest('work_date')
+            ->get()
+            ->map(function ($record) {
+                $hours = 0;
+                if ($record->time_in) {
+                    // If time_out is null, use current time; otherwise use recorded time_out
+                    $endTime = $record->time_out ?? now();
+                    
+                    // Calculate difference in minutes and convert to hours
+                    $hours = $record->time_in ? round($record->time_in->diffInMinutes($endTime) / 60, 2) : 0;
+                    }
+
+                return [
+                    'id' => $record->attendance_id,
+                    'intern_name' => $record->intern->user->name,
+                    'department' => $record->intern->department,
+                    'time_in' => $record->time_in?->format('H:i:s'),
+                    'time_out' => $record->time_out?->format('H:i:s') ?? '---',
+                    'hours_rendered' => $hours,
+                    'status' => $record->status,
+                ];
+            });
+        
+        return response()->json([
+            'attendance_records' => $attendanceRecords,
+        ], 200);
+    }
+
+    public function getAttendanceOverview(Request $request)
+    {
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $admin = $request->user()->admin;
+
+        $totalRecords = $admin->attendanceRecords()->count();
+        $presentCount = $admin->attendanceRecords()->present()->count();
+        $lateCount = $admin->attendanceRecords()->late()->count();
+        $absentCount = $admin->attendanceRecords()->absent()->count();
+        $undertimeCount = $admin->attendanceRecords()->where('status', 'Undertime')->count();
+
+        return response()->json([
+            'attendance_overview' => [
+                'total_records' => $totalRecords,
+                'present' => $presentCount,
+                'late' => $lateCount,
+                'absent' => $absentCount,
+                'undertime' => $undertimeCount,
+            ],
+        ], 200);
+    }
 }

@@ -16,9 +16,9 @@ return new class extends Migration
             $table->foreignId('intern_id')->constrained('interns', 'intern_id')->onDelete('cascade');
             $table->date('work_date');
             $table->time('time_in');
-            $table->time('time_out');
-            $table->enum('status', ['On Time', 'Late', 'Absent', 'Undertime']);
-            $table->decimal('total_hours', 4, 2);
+            $table->time('time_out')->nullable();
+            $table->enum('status', ['Present', 'Late', 'Absent', 'Undertime']);
+            $table->decimal('total_hours', 4, 2)->nullable();
             $table->timestamps();
 
         });

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\API\Controller;
 use App\Models\Intern;
 use App\Models\Submission;
-use App\Models\DailyReport;
+use App\Models\Daily_Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +14,7 @@ class InternController extends Controller
 {
     /**
      * get intern's tasks/submissions
-     * GET /api/intern/tasks
+     * GET /api/intern/documents
      */
     public function getMyDocuments(Request $request)
     {
@@ -37,7 +37,7 @@ class InternController extends Controller
                     'date_submitted' => $submission->date_submitted->format('Y-m-d H:i:s'),
                     'status' => $submission->status,
                     'admin_remarks' => $submission->admin_remarks,
-                    'daily_report' => $submission->dailyReport ? [
+                    'daily_reports' => $submission->dailyReport ? [
                         'report_title' => $submission->dailyReport->report_title,
                         'accomplishments' => $submission->dailyReport->accomplishments,
                         'tasks_completed' => $submission->dailyReport->tasks_completed,
@@ -54,16 +54,16 @@ class InternController extends Controller
     /**
      * submit a document/daily report
      * POST /api/intern/tasks/{taskId}/submit
-     * POST /api/intern/tasks/submit
+     * POST /api/intern/documents/submit
      */
-    public function submitDocument(Request $request, $taskId = null)
+    public function submitDocument(Request $request)
     {
         if (!$request->user()->isIntern()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $validated = $request->validate([
-            'type' => 'required|in:Daily Report,Document, Other', # Has to match with migrations table enum values
+            'type' => 'required|in:Daily Report,Document,Other', # Has to match with migrations table enum values
             'file' => 'required|file|max:10240', // 10MB max
             
             // Daily report fields (required if type is Daily Report)
@@ -87,7 +87,7 @@ class InternController extends Controller
             'file_name' => $fileName,
             'file_path' => $filePath,
             'date_submitted' => now(),
-            'status' => 'pending',
+            'status' => 'Pending', //default status
             'description' => $validated['report_title'] ?? 'Task submission' //default description 
         ]);
 
@@ -112,8 +112,7 @@ class InternController extends Controller
                 'file_path' => $submission->file_path,
                 'date_submitted' => $submission->date_submitted->format('Y-m-d H:i:s'),
                 'status' => $submission->status,
-                'admin_remarks' => $submission->admin_remarks,
-                'daily_report' => $submission->dailyReport ? [
+                'daily_reports' => $submission->dailyReport ? [
                     'report_title' => $submission->dailyReport->report_title,
                     'accomplishments' => $submission->dailyReport->accomplishments,
                     'tasks_completed' => $submission->dailyReport->tasks_completed,
@@ -143,6 +142,7 @@ class InternController extends Controller
         $rejectedSubmissions = $intern->submissions()->rejected()->count();
         
         $totalHours = $intern->attendance()->sum('total_hours');
+        $presentDays = $intern->attendance()->Present()->count();
         $lateDays = $intern->attendance()->late()->count();
         $absentDays = $intern->attendance()->absent()->count();
         
@@ -176,6 +176,7 @@ class InternController extends Controller
                 ],
                 'attendance' => [
                     'total_hours' => (float) $totalHours,
+                    'present_days' => $presentDays,
                     'late_days' => $lateDays,
                     'absent_days' => $absentDays,
                 ],
@@ -185,4 +186,79 @@ class InternController extends Controller
             ],
         ], 200);
     }
+
+    public function attendanceTimeIn(Request $request)
+    {
+        if (!$request->user()->isIntern()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $intern = $request->user()->intern;
+
+        // Check if there's already an active attendance record for today
+        $existingAttendance = $intern->attendance()
+            ->whereDate('work_date', now()->toDateString())
+            ->whereNull('time_out')
+            ->first();
+
+        if ($existingAttendance) {
+            return response()->json(['message' => 'You have already timed in for today. Please time out before timing in again.'], 400);
+        }
+
+        // Create new attendance record
+        $attendance = $intern->attendance()->create([
+            'work_date' => now()->toDateString(),
+            'time_in' => now(),
+        ]);
+
+        return response()->json([
+            'message' => 'Time in recorded successfully',
+            'attendance' => [
+                'id' => $attendance->id,
+                'work_date' => $attendance->date,
+                'time_in' => $attendance->time_in->format('Y-m-d H:i:s'),
+                'time_out' => null,
+                'total_hours' => null,
+                'status' => 'Present',
+            ],
+        ], 200);
+    }
+
+    public function attendanceTimeOut(Request $request)
+    {
+        if (!$request->user()->isIntern()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $intern = $request->user()->intern;
+
+        // Find the active attendance record for today
+        $attendance = $intern->attendance()
+            ->whereDate('work_date', now()->toDateString())
+            ->whereNull('time_out')
+            ->first();
+
+        if (!$attendance) {
+            return response()->json(['message' => 'No active time in record found for today. Please time in first.'], 400);
+        }
+
+        // Update attendance record with time out and calculate total hours
+        $attendance->update([
+            'time_out' => now(),
+            'total_hours' => $attendance->time_in->diffInHours(now()),
+        ]);
+
+        return response()->json([
+            'message' => 'Time out recorded successfully',
+            'attendance' => [
+                'id' => $attendance->id,
+                'work_date' => $attendance->date,
+                'time_in' => $attendance->time_in->format('Y-m-d H:i:s'),
+                'time_out' => $attendance->time_out->format('Y-m-d H:i:s'),
+                'total_hours' => (float) $attendance->total_hours,
+                'status' => 'Present',
+            ],
+        ], 200);
+    }
+
 }

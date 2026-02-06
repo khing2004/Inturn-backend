@@ -63,11 +63,11 @@ class Attendance extends Model
     }
 
     /**
-     * Scope a query to only include on-time attendance.
+     * Scope a query to only include present attendance.
      */
-    public function scopeOnTime($query)
+    public function scopePresent($query)
     {
-        return $query->where('status', 'On Time');
+        return $query->where('status', 'Present');
     }
 
     /**
