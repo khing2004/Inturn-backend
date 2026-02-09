@@ -248,6 +248,10 @@ class InternController extends Controller
             'total_hours' => $attendance->time_in->diffInHours(now()),
         ]);
 
+        $status = 'Present';
+        if ($attendance->time_in->diffInMinutes(now()) < 8 * 60) { // less than 8 hours
+            $status = 'Undertime';
+        }
         return response()->json([
             'message' => 'Time out recorded successfully',
             'attendance' => [
@@ -256,7 +260,7 @@ class InternController extends Controller
                 'time_in' => $attendance->time_in->format('Y-m-d H:i:s'),
                 'time_out' => $attendance->time_out->format('Y-m-d H:i:s'),
                 'total_hours' => (float) $attendance->total_hours,
-                'status' => 'Present',
+                'status' => $status,
             ],
         ], 200);
     }
@@ -298,6 +302,34 @@ class InternController extends Controller
                 'absent_days' => $absentDays,
                 'undertime_days' => $undertimeDays,
             ],
+        ], 200);
+    }
+
+    public function getMyAttendanceHistory(Request $request)
+    {
+        if (!$request->user()->isIntern()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $intern = $request->user()->intern;
+
+        // Get attendance records for the intern
+        $attendanceRecords = $intern->attendance()
+            ->latest('work_date')
+            ->get()
+            ->map(function ($record) {
+                return [
+                    'id' => $record->attendance_id,
+                    'work_date' => $record->work_date->format('Y-m-d'),
+                    'time_in' => $record->time_in ? $record->time_in->format('H:i:s') : null,
+                    'time_out' => $record->time_out ? $record->time_out->format('H:i:s') : null,
+                    'total_hours' => (float) $record->total_hours,
+                    'status' => $record->status,
+                ];
+            });
+
+        return response()->json([
+            'attendance_records' => $attendanceRecords,
         ], 200);
     }
 }

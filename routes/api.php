@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/profile', [InternController::class, 'getMyProfile']); # checked status 200
         Route::post('/attendance/timeIn', [InternController::class, 'attendanceTimeIn']); # checked status 200
         Route::put('/attendance/timeOut', [InternController::class, 'attendanceTimeOut']); # checked status 200
-        Route::get('/attendance/summary', [InternController::class, 'getMyAttendanceOverallSummary']); # 
+        Route::get('/attendance/summary', [InternController::class, 'getMyAttendanceOverallSummary']); # checked status 200
+        Route::get('/attendance/history', [InternController::class, 'getMyAttendanceHistory']); # checked status 200
     });
 });
