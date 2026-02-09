@@ -261,4 +261,43 @@ class InternController extends Controller
         ], 200);
     }
 
+    public function getMyAttendanceOverallSummary(Request $request)
+    {
+        if (!$request->user()->isIntern()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $intern = $request->user()->intern;
+
+        // Get attendance records for the intern
+        $attendanceRecords = $intern->attendance()->get();
+
+        // Calculate summary statistics
+        $totalHours = 0;
+        $presentDays = 0;
+        $lateDays = 0;
+        $absentDays = 0;
+        $undertimeDays = 0;
+
+        foreach ($attendanceRecords as $record) {
+            if ($record->time_out && $record->time_in) {
+                // Calculate total hours for each record
+                $totalHours += $record->total_hours ?? 0;
+                $presentDays++;
+            } else {
+                // If no time_out, it's an absent day
+                $absentDays++;
+            }
+        }
+
+        return response()->json([
+            'summary' => [
+                'total_hours' => (float) $totalHours,
+                'present_days' => $presentDays,
+                'late_days' => $lateDays,
+                'absent_days' => $absentDays,
+                'undertime_days' => $undertimeDays,
+            ],
+        ], 200);
+    }
 }

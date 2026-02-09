@@ -29,7 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/interns/{id}', [AdminController::class, 'deleteIntern']); # checked thru postman returned status code 200
         Route::get('/interns/details/{id}', [AdminController::class, 'getInternDetails']); #
         Route::get('/interns/attendance', [AdminController::class, 'getAttendanceRecords']); # checked thru postman returned status code 200
-        Route::get('/interns/attendance/overview', [AdminController::class, 'getAttendanceOverview']); #
+        Route::get('/interns/attendance/overview', [AdminController::class, 'getAttendanceOverview']); # checked thru postman returned status code 200
     });
 
     // intern specific routes
@@ -39,5 +39,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/profile', [InternController::class, 'getMyProfile']); # checked status 200
         Route::post('/attendance/timeIn', [InternController::class, 'attendanceTimeIn']); # checked status 200
         Route::put('/attendance/timeOut', [InternController::class, 'attendanceTimeOut']); # checked status 200
+        Route::get('/attendance/summary', [InternController::class, 'getMyAttendanceOverallSummary']); # 
     });
 });
