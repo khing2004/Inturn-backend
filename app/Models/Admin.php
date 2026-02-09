@@ -52,4 +52,19 @@ class Admin extends Model
     {
         return $this->hasMany(Evaluation::class, 'admin_id', 'admin_id');
     }
+
+    /**
+     * Get all attendance records for interns supervised by this admin.
+     */
+    public function attendanceRecords()
+{
+    return $this->hasManyThrough(
+        Attendance::class, 
+        Intern::class,     
+        'admin_id',    // Foreign key on interns table
+        'intern_id',   // Foreign key on attendance table
+        'admin_id',    // Local key on admins table
+        'intern_id'    // Local key on interns table
+    );
+}
 }

@@ -27,8 +27,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/interns', [AdminController::class, 'createIntern']); # checked thru postman returned status code 201
         Route::put('/interns/{id}', [AdminController::class, 'updateIntern']); # checked thru postman returned status code 200
         Route::delete('/interns/{id}', [AdminController::class, 'deleteIntern']); # checked thru postman returned status code 200
-        Route::get('/interns/{id}', [AdminController::class, 'getInternDetails']); #
-        Route::get('/interns/attendance', [AdminController::class, 'getAttendanceRecords']); #
+        Route::get('/interns/details/{id}', [AdminController::class, 'getInternDetails']); #
+        Route::get('/interns/attendance', [AdminController::class, 'getAttendanceRecords']); # checked thru postman returned status code 200
         Route::get('/interns/attendance/overview', [AdminController::class, 'getAttendanceOverview']); #
     });
 
@@ -37,7 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/documents', [InternController::class, 'getMyDocuments']); # checked status 200
         Route::post('/documents/submit', [InternController::class, 'submitDocument']); #checked status 201
         Route::get('/profile', [InternController::class, 'getMyProfile']); # checked status 200
-        Route::get('/attendance/timeIn', [InternController::class, 'attendanceTimeIn']); # checked status 200
-        Route::get('/attendance/timeOut', [InternController::class, 'attendanceTimeOut']); # checked status 200
+        Route::post('/attendance/timeIn', [InternController::class, 'attendanceTimeIn']); # checked status 200
+        Route::put('/attendance/timeOut', [InternController::class, 'attendanceTimeOut']); # checked status 200
     });
 });

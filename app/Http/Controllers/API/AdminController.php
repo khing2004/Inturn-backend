@@ -247,14 +247,19 @@ class AdminController extends Controller
         ], 200);
     }
 
+    // Gets the attendance record for the day for all interns under the admin's supervision
     public function getAttendanceRecords(Request $request)
     {
         if (!$request->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
+         
+        $today = now()->toDateString();
+        
         $attendanceRecords = $request->user()->admin->attendanceRecords()
-            ->with('attendance, interns, user')
-            ->latest('work_date')
+            ->with(['intern.user'])
+            ->whereDate('work_date', $today)
+            ->latest('time_in')
             ->get()
             ->map(function ($record) {
                 $hours = 0;
@@ -278,31 +283,35 @@ class AdminController extends Controller
             });
         
         return response()->json([
+            'date' => $today,
             'attendance_records' => $attendanceRecords,
         ], 200);
+
     }
 
+    // Get today's attendance overview (total, present, late, absent, undertime) for all interns under the admin's supervision
     public function getAttendanceOverview(Request $request)
     {
         if (!$request->user()->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $today = now()->toDateString();
+
         $admin = $request->user()->admin;
 
-        $totalRecords = $admin->attendanceRecords()->count();
-        $presentCount = $admin->attendanceRecords()->present()->count();
-        $lateCount = $admin->attendanceRecords()->late()->count();
-        $absentCount = $admin->attendanceRecords()->absent()->count();
-        $undertimeCount = $admin->attendanceRecords()->where('status', 'Undertime')->count();
+        $todayRecords = $admin->attendanceRecords()
+            ->whereDate('work_date', $today)
+            ->get();
 
         return response()->json([
+            'date' => $today,
             'attendance_overview' => [
-                'total_records' => $totalRecords,
-                'present' => $presentCount,
-                'late' => $lateCount,
-                'absent' => $absentCount,
-                'undertime' => $undertimeCount,
+                'total_records' => $todayRecords->count(),
+                'present' => $todayRecords->where('status', 'Present')->count(),
+                'late' => $todayRecords->where('status', 'Late')->count(),
+                'absent' => $todayRecords->where('status', 'Absent')->count(),
+                'undertime' => $todayRecords->where('status', 'Undertime')->count(),
             ],
         ], 200);
     }

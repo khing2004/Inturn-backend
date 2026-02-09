@@ -109,7 +109,7 @@ class Notification extends Model
      */
     public function scopeUrgent($query)
     {
-        return $query->where('Type', 'Urgent');
+        return $query->where('type', 'Urgent');
     }
 
     /**
