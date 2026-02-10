@@ -9,6 +9,7 @@ use App\Models\Daily_Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class InternController extends Controller
 {
@@ -334,44 +335,71 @@ class InternController extends Controller
     }
 
     public function getMonthlyAttendanceSummary(Request $request)
-{
-    if (!$request->user()->isIntern()) {
-        return response()->json(['message' => 'Unauthorized'], 403);
-    }
-
-    $year = $request->query('year', now()->year);
-    $intern = $request->user()->intern;
-
-    // Fetch all records for the year once to process in memory
-    $yearlyRecords = $intern->attendance()
-        ->whereYear('work_date', $year)
-        ->get();
-
-    $summary = [];
-
-    for ($m = 1; $m <= 12; $m++) {
-        $monthName = \Carbon\Carbon::create()->month($m)->format('F');
-        $monthRecords = $yearlyRecords->filter(fn($record) => $record->work_date->month == $m);
-
-        if ($monthRecords->isEmpty()) {
-            $summary[$monthName] = null; 
-            continue;
+    {
+        if (!$request->user()->isIntern()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        $summary[$monthName] = [
-            'total_hours' => (float) $monthRecords->sum('total_hours'),
-            'present_days' => $monthRecords->where('status', 'Present')->count(),
-            'late_days' => $monthRecords->where('status', 'Late')->count(),
-            'absent_days' => $monthRecords->where('status', 'Absent')->count(),
-            'undertime_days' => $monthRecords->where('status', 'Undertime')->count(),
-            // Calculated for the progress ring UI, uses 160 hours as the standard full-time monthly hours (8 hours/day * 20 workdays)
-            'completion_percentage' => min(100, round(($monthRecords->sum('total_hours') / 160) * 100, 2))
-        ];
+        $year = $request->query('year', now()->year);
+        $intern = $request->user()->intern;
+
+        // Fetch all records for the year once to process in memory
+        $yearlyRecords = $intern->attendance()
+            ->whereYear('work_date', $year)
+            ->get();
+
+        $summary = [];
+
+        for ($m = 1; $m <= 12; $m++) {
+            $monthName = \Carbon\Carbon::create()->month($m)->format('F');
+            $monthRecords = $yearlyRecords->filter(fn($record) => $record->work_date->month == $m);
+
+            if ($monthRecords->isEmpty()) {
+                $summary[$monthName] = null; 
+                continue;
+            }
+
+            $summary[$monthName] = [
+                'total_hours' => (float) $monthRecords->sum('total_hours'),
+                'present_days' => $monthRecords->where('status', 'Present')->count(),
+                'late_days' => $monthRecords->where('status', 'Late')->count(),
+                'absent_days' => $monthRecords->where('status', 'Absent')->count(),
+                'undertime_days' => $monthRecords->where('status', 'Undertime')->count(),
+                // Calculated for the progress ring UI, uses 160 hours as the standard full-time monthly hours (8 hours/day * 20 workdays)
+                'completion_percentage' => min(100, round(($monthRecords->sum('total_hours') / 160) * 100, 2))
+            ];
+        }
+
+        return response()->json([
+            'year' => $year,
+            'monthly_summary' => $summary
+        ], 200);
     }
 
-    return response()->json([
-        'year' => $year,
-        'monthly_summary' => $summary
-    ], 200);
-}
+    public function downloadMyAttendancePDF(Request $request)
+    {
+        if (!$request->user()->isIntern()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $intern = $request->user()->intern;
+
+        $attendance = $intern->attendance()
+            ->orderBy('work_date', 'desc')
+            ->get();
+
+        $data = [
+            'intern' => $intern,
+            'attendance' => $attendance,
+            'totalHours' => $attendance->sum('total_hours'),
+            'generated_at' => now()->format('F d, Y h:i A'),
+        ];
+
+        // Load a view file and convert to PDF
+        $pdf = Pdf::loadView('pdf.attendance', $data);
+
+        // Return the PDF as a download
+        return $pdf->download($intern->user->name . '_Attendance.pdf');
+
+    }
 }
