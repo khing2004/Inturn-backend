@@ -44,8 +44,8 @@ class Attendance extends Model
      */
     protected $casts = [
         'work_date' => 'date',
-        'time_in' => 'datetime:H:i:s',
-        'time_out' => 'datetime:H:i:s',
+        'time_in' => 'datetime',
+        'time_out' => 'datetime',
         'total_hours' => 'decimal:2',
         'status' => 'string',
     ];

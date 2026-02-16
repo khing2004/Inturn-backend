@@ -33,8 +33,15 @@ class DatabaseSeeder extends Seeder
         // Create Test Intern User
         $internUser = User::create([
             'name' => 'Test Intern',
-            'email' => 'intern@example.com',
+            'email' => 'intern@inturn.com',
             'password' => Hash::make('intern123'),
+            'gender' => 'female'
+        ]);
+
+        $internUser2 = User::create([
+            'name' => 'Test Intern 2',
+            'email' => 'intern2@inturn.com',
+            'password' => Hash::make('intern2123'),
             'gender' => 'female'
         ]);
 
@@ -50,6 +57,20 @@ class DatabaseSeeder extends Seeder
             'emergency_contact' => '09987654321',
             'emergency_contact_name' => 'Marites Ollaban',
             'address' => '123 Main St, Mandaue City',
+            'status' => 'Active',
+        ]);
+
+        Intern::create([
+            'user_id' => $internUser2->user_id,
+            'admin_id' => 1,
+            'university' => 'University of Ph',
+            'department' => 'Computer Science',
+            'supervisor' => 'Ferdy',
+            'start_date' => now(),
+            'phone_number' => '09123456789',
+            'emergency_contact' => '09987654321',
+            'emergency_contact_name' => 'Marites',
+            'address' => '123 Main St, Cebu City',
             'status' => 'Active',
         ]);
     }

@@ -315,4 +315,30 @@ class AdminController extends Controller
             ],
         ], 200);
     }
+
+    /**
+     * For Notifications
+     */
+
+    public function getNotifications(Request $request)
+{
+    $query = $request->user()->notifications()->latest();
+
+    // Filter by type if provided in the request (e.g., ?type=Warning)
+    if ($request->has('type')) {
+        $query->where('type', $request->query('type'));
+    }
+
+    $notifications = $query->paginate(10); // Matches the pagination in your UI
+
+    return response()->json([
+        'notifications' => $notifications,
+        'counts' => [
+            'all' => $request->user()->notifications()->count(),
+            'unread' => $request->user()->notifications()->unread()->count(),
+            // ... add other counts for the UI badges
+        ]
+    ]);
+}
+
 }

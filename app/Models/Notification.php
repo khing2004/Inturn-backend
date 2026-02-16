@@ -35,6 +35,7 @@ class Notification extends Model
         'is_read',
         'type',
         'created_at',
+        'message'
     ];
 
     /**

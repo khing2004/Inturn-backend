@@ -42,6 +42,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/attendance/summary', [InternController::class, 'getMyAttendanceOverallSummary']); # checked status 200
         Route::get('/attendance/history', [InternController::class, 'getMyAttendanceHistory']); # checked status 200
         Route::get('/attendance/monthly-summary', [InternController::class, 'getMonthlyAttendanceSummary']); # checked status 200
-        Route::get('/attendance/download-pdf', [InternController::class, 'downloadMyAttendancePdf']); #
+        Route::get('/attendance/download-pdf', [InternController::class, 'downloadMyAttendancePdf']); # checked status 200
     });
 });
