@@ -1,39 +1,71 @@
-💻 Backend: Laravel API (ip-geo-api)
-IP Geolocation API
-This is the backend service for the IP Geolocation Tracker, responsible for authentication, data persistence, and history management.
+# 💻 Backend: Laravel API — `ip-geo-api`
 
-🛠 Tech Stack
-Framework: Laravel 11
+The backend service for the IP Geolocation Tracker, handling authentication, data persistence, and search history management.
 
-Database: MariaDB / MySQL
+---
 
-Auth: Laravel Sanctum (Token-based)
+## 🛠 Tech Stack
 
-⚙️ Installation
-Clone and Enter: Navigate to the ip-geo-api directory.
+| Layer | Technology |
+|---|---|
+| Framework | Laravel 11 |
+| Database | MariaDB / MySQL |
+| Auth | Laravel Sanctum (Token-based) |
 
-Install Dependencies:
+---
 
-Bash
+## ⚙️ Installation
+
+### 1. Navigate to the directory
+```bash
+cd ip-geo-api
+```
+
+### 2. Install dependencies
+```bash
 composer install
-Environment Setup:
+```
 
-Bash
+### 3. Environment setup
+```bash
 cp .env.example .env
 php artisan key:generate
-Database Configuration: Update the .env file with your local database credentials (DB_DATABASE, DB_USERNAME, DB_PASSWORD).
+```
 
-Migrate and Seed:
+### 4. Configure your database
 
-Bash
+Open the `.env` file and update the following with your local credentials:
+
+```env
+DB_DATABASE=your_database_name
+DB_USERNAME=your_username
+DB_PASSWORD=your_password
+```
+
+### 5. Migrate and seed
+```bash
 php artisan migrate --seed
-Note: This creates a test user: admin@email.com / password123.
+```
 
-📡 API Endpoints
-POST /api/login - Authenticates user and returns a Bearer token.
+> **Note:** The seeder creates a default test user: `admin@email.com` / `password123`
 
-GET /api/history - Fetches all searches for the authenticated user.
+---
 
-POST /api/history - Saves a new search result to the database.
+## 📡 API Endpoints
 
-DELETE /api/history - Bulk deletes selected history entries.
+All endpoints are prefixed with `/api` and require a Bearer token unless stated otherwise.
+
+| Method | Endpoint | Auth Required | Description |
+|---|---|---|---|
+| `POST` | `/api/login` | ❌ | Authenticates user and returns a Bearer token |
+| `GET` | `/api/history` | ✅ | Fetches all searches for the authenticated user |
+| `POST` | `/api/history` | ✅ | Saves a new search result to the database |
+| `DELETE` | `/api/history` | ✅ | Bulk deletes selected history entries |
+
+### Authentication
+
+Include the token returned from `/api/login` in the `Authorization` header for all protected routes:
+
+```
+Authorization: Bearer <your_token_here>
+```
