@@ -8,7 +8,7 @@ The backend service for the IP Geolocation Tracker, handling authentication, dat
 
 | Layer | Technology |
 |---|---|
-| Framework | Laravel 11 |
+| Framework | Laravel 12 |
 | Database | MariaDB / MySQL |
 | Auth | Laravel Sanctum (Token-based) |
 
